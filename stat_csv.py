@@ -35,6 +35,7 @@ def readcsv(filename):
     #return a.as_matrix()
 #    return pd.DataFrame(a)
     
+
 def sdo_analisi(filename):
     #anno= "02-01-2012-30-12-2012"
     #filename="sdopiccolo.csv"
@@ -54,16 +55,19 @@ def sdo_analisi(filename):
     other = 0
     ambulance = 0
     direct = 0
+    ad=0
     
     while(i<len(fl)):
         if(fl.loc[i][35]!=fl.loc[i][37]):
             newmatrix = newmatrix.append(fl.iloc[j]) 
             j=j+1
+
+            if(fl.loc[i][30]== 'Privata'):
+                ad=ad+1
             if(fl.loc[i][5] == 'deceduto'):
                 death = death + 1
             elif(fl.loc[i][4] == 'nuovo nato'):
-                birth = birth + 1
-            elif(fl.loc[i][4] == 'pervenuto tramite 118'):
+            elif(fl.loc[i][4] == 'pervenuto tramite  118'):
                 ambulance = ambulance + 1
             elif(fl.loc[i][4] == 'altro'):
                 other = other + 1
@@ -71,9 +75,15 @@ def sdo_analisi(filename):
                 direct = direct + 1
         i=i+1
         
-    print(death,birth,ambulance,other,direct)
-        
+    print('Deceduto= '+str(death))
+    print('Nato= '+str(birth))
+    print('Pervenuto= '+str(ambulance))
+    print('Altro= '+str(other))
+    print('Generico= '+str(direct))
+    print('Privata= '+str(ad))
+    newmatrix.to_csv(r'/Users/stevi/Desktop/MMSD/extraction-05-04-2017/31-12-2012-29-12-2013/specdiverse.txt', header=None, index=None, sep=' ', mode='a')    
     return newmatrix
+
 
 
 def split_csv(filename):
@@ -107,7 +117,6 @@ def split_csv(filename):
             
     
     return dl
-
 #    
 #def load_data(filename):
 #    csv_database = create_engine('sqlite:///csv_database.db')
