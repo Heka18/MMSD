@@ -30,33 +30,43 @@ def start(filename):
     #print(rows) #1128
     #print(coloumns) #117
     
-    newmatrix = np.zeros((len(fl.columns),52))
+    newmatrix = np.zeros((len(fl.columns),16))
     
     #print(newmatrix)
     #print(fl)
     
-    i=1
+    i=0
     j=1
-     # week=0
+    week=0
     tmpsum = 0
     
     while(j < len(fl.columns)): # ospedali
         #newmatrix[j][0] = fl.iloc[0][j]
-        week = 0
+        
         while(week<16):
             while( i < len(fl)): # comuni
-                cella=fl.iloc[i][j].split("_")
-                tmpsum = tmpsum + int(cella[week]) 
+                
+                cella=fl.loc[i][j].split("_")
+                k = 0
+                ii = 0
+                while(k<len(cella) and (ii<16)):
+                    
+                    print(cella[week])
+                    tmpsum = tmpsum + int(cella[ii]) 
+                    ii = ii + 1
+                    k = k + 1
+                    #sprint(tmpsum)
                 #print("La somma tmp nella riga ",i," è ",tmpsum)
                 i=i+1
+            
             newmatrix[j][week]=tmpsum
+            week = week + 1
             #print("Nella settimana ", week, " ci sono in totale ",tmpsum," persone nell'ospedale ",j)
             #print(newmatrix[j][week])
-            week=week+1
             tmpsum=0
-        j=j+1
+            j=j+1
     
-    df=pd.DataFrame(newmatrix)
+    #df=pd.DataFrame(newmatrix)
     #df.pd.DataFrame.to_csv("outputhospitalweek.csv")
     return newmatrix
 

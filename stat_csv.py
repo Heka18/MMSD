@@ -67,6 +67,7 @@ def sdo_analisi(filename):
             if(fl.loc[i][5] == 'deceduto'):
                 death = death + 1
             elif(fl.loc[i][4] == 'nuovo nato'):
+                birth = birth + 1
             elif(fl.loc[i][4] == 'pervenuto tramite  118'):
                 ambulance = ambulance + 1
             elif(fl.loc[i][4] == 'altro'):
@@ -86,38 +87,91 @@ def sdo_analisi(filename):
 
 
 
-def split_csv(filename):
+def split_list_csv(filename):
     a = pd.read_csv(filename)
     fl = pd.DataFrame(a)
-    dl = pd.DataFrame()
+    dl = pd.DataFrame(a)
     #matrix = [[[0 for _ in range(len(fl))] for _ in range(len(fl.columns)**len(fl.columns))]]
+    #newmatrix = np.zeros((len(fl.columns),16))
     
     i = 0
-    l = []
+    #tmp_sum = 0
     
     while(i<len(fl)):
         j = 1
         while(j<len(fl.columns)):
-            newList = pd.DataFrame(fl.loc[i][j].split('_'))
+#            newList = pd.DataFrame(fl.loc[i][j].split('_'))
+            dl.loc[i][j] = fl.loc[i][j].split('_')
+#            l = fl.loc[i][j].split('_')
+#            week = 0
+#            while(week < 16):
+#                tmp_sum = tmp_sum + l[weel]
+#                newmatrix[i][week] = tmp_sum
+#                week = week + 1
             #print(newList)
-            k = 0
-            while(k<len(newList)):
-                dl = dl.append(newList.loc[k][0])
-#            print(newList)
-            
 #            k = 0
-#            for elem in newList:
-#                #dl.loc[i][k] = elem
+#            while(k<len(newList)):
+#                dl = dl.append(newList.loc[k][0])
+##            print(newList)
+#            
+#            k = 0
+#            print(len(dl.columns))
+#            while(k<len(newList)):
+#                dl.loc[i][k] = newList.loc[k][0]
 #                #dl = dl.append(elem)
 #                #print(elem)
-#                matrix[i][k] = elem
-                k = k + 1
+#                #matrix[i][k] = elem
+#                k = k + 1
             j = j+1
         i=i+1
+    return dl
+
+def read_list(row,col,df):
+    return df.loc[row][col]
+
+#def total_week(col,df):
+#    l = read_list(0,col,df)
+#    i = 1
+#    while(i < len(df)):
+#        df_list = read_list(i,col,df)
+#        j = 0
+#        while(j < len(df_list)):
+#            l[j] = l[j] + df_list[j]
+#            j = j + 1
+#        
+#        i = i + 1
+#    
+#    return l
+
+def lists_total_week(filename):
+    df = pd.DataFrame(split_list_csv(filename))
+    j = 1
+    #data_frame = pd.DataFrame(df)
+    listoflist = []
+    
+    while(j < len(df.columns)):
+        l = read_list(0,j,df)
+        i = 1
+        while(i < len(df)):
+            df_list = read_list(i,j,df)
+            k = 0
+            while(k < len(df_list)):
+                l[k] = l[k] + df_list[k]
+                k = k + 1
+            i = i + 1
+        #df.loc[0][j] = list(l)
+        listoflist.append(list(l))
+        j = j + 1
+    
+    #return df
+    return listoflist
+        
+    
             
     
-    return dl
-#    
+    
+
+
 #def load_data(filename):
 #    csv_database = create_engine('sqlite:///csv_database.db')
 #    
