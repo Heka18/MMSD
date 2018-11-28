@@ -11,7 +11,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
     
-def readcsv1(filename):	
+def read_csv1(filename):	
     file = open(filename, "r")
     reader = csv.reader(file, delimiter=",")
     
@@ -35,7 +35,7 @@ def readcsv(filename):
     #return a.as_matrix()
 #    return pd.DataFrame(a)
     
-def sdoanalisi(filename):
+def sdo_analisi(filename):
     #anno= "02-01-2012-30-12-2012"
     #filename="sdopiccolo.csv"
     #os.chdir("/Users/stevi/Desktop/MMSD/extraction-05-04-2017/"+anno)
@@ -74,6 +74,39 @@ def sdoanalisi(filename):
     print(death,birth,ambulance,other,direct)
         
     return newmatrix
+
+
+def split_csv(filename):
+    a = pd.read_csv(filename)
+    fl = pd.DataFrame(a)
+    dl = pd.DataFrame()
+    #matrix = [[[0 for _ in range(len(fl))] for _ in range(len(fl.columns)**len(fl.columns))]]
+    
+    i = 0
+    l = []
+    
+    while(i<len(fl)):
+        j = 1
+        while(j<len(fl.columns)):
+            newList = pd.DataFrame(fl.loc[i][j].split('_'))
+            #print(newList)
+            k = 0
+            while(k<len(newList)):
+                dl = dl.append(newList.loc[k][0])
+#            print(newList)
+            
+#            k = 0
+#            for elem in newList:
+#                #dl.loc[i][k] = elem
+#                #dl = dl.append(elem)
+#                #print(elem)
+#                matrix[i][k] = elem
+                k = k + 1
+            j = j+1
+        i=i+1
+            
+    
+    return dl
 
 #    
 #def load_data(filename):
