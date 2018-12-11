@@ -6,143 +6,99 @@ Created on Mon Dec  3 19:35:41 2018
 @author: stevi
 """
 import pickle
-import os
-import numpy as np
-import csv
 import pandas as pd 
 
-
-
-#yep
-def readcsv(filename):
-    return pd.read_csv(filename, low_memory=False) 
-
-
-def get_all_dataSet():
-    owd= os.getcwd()
-    os.chdir(owd+"/dataSet/")
-    dataset_list=[]
-    for file in glob.glob('*.txt'):
-        dataset_list.append(file)
-    return dataset_list
-
-def find_sentiment(file):
-    return file[8:-4]
-
-def falstart():
-    count = 0
-    startDir=os.getcwd()
-    lexical_resources = labDBSA.get_lexical_resources()
-    collection = open_connection_to_mongo()
-            
-    dataset_list=get_all_dataSet()
-    owd= os.getcwd()
-    parentDir=os.path.abspath(os.path.join(owd, os.pardir))
-    
-    for file in dataset_list :    
-        with open(file, 'r', encoding='utf-8') as myfile:
-            data=myfile.read().replace('\n', '')
-            wordsFiltered = labDBSA.run_clean_tweet(data,parentDir)
-            words_dict = labDBSA.createDictionary(wordsFiltered,lexical_resources)
-            #caricamento su Oracle
-            oracleDB.connessioneOracle(words_dict,wordsFiltered,file)
-            #caricamento su Mongo
-            count = mongoDB.caricamentoMongo(wordsFiltered,file,count,collection)
-            os.chdir(startDir)       
-            sentiment=find_sentiment(file)
-            wordsCloud.create_word_cloud(sentiment,wordsFiltered)
-            os.chdir("/Users/stevi/.spyder-py3/ProgettoLabDB/dataSet/")
-
-    mongoDB.mapReduce(collection)
-
-def save_obj(obj, name ):
-    with open('obj/'+ name + '.pkl', 'wb') as f:
+def save_obj(obj, name):
+    with open('datiStrutturati/'+ name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
-def load_obj(name ):
-    with open('obj/' + name + '.pkl', 'rb') as f:
+
+def load_obj(name):
+    with open('datiStrutturati/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
-def filldict():
-    hospital_dict= dict()
-    spec_dict= dict()
-    week_dict= dict()
-    hospital_dict[id_hospital]= spec_dict
-    spec_dict[id_spec]= week_dict
-    week_dict[week_num]= num_patients
 
-def is_not_empty(patients_array):
+def is_not_empty(parsed_array):
     c=0
-    while(c<len(patients_array)):
-        if(patients_array[0] != 0):
+    length=len(parsed_array)
+    
+    while(c<length):#Controllo se nella lista c'è almeno un valore diverso da 0
+        if(parsed_array[c] != 0):
             return True
         c=c+1
     
     return False
         
     
-# Ritorna un array di int che corrispondono al numero di pazienti in quella settimana(es. indice 1 value 3= 3 pazienti nella seconda settimana)
-def parse_cel(df,riga,c):
+def parse_cel(df,row,c):
     separator=['_']
-    patients_array=[int(h) for h in df.loc[riga][c] if h not in separator]
+    #Parsifico la cella di riga row e colonna c inserendo i valori in una 
+    #lista con elementi separatori quelli presenti in separator
+    parsed_array=[int(h) for h in df.loc[row][c] if h not in separator]
     
-    return patients_array
+    return parsed_array
 
-def create_week_dict(df,riga,c):
-    week_dict= dict()
-    patients_array=parse_cel(df,riga,c)
-    w=0
-    if(is_not_empty(patients_array)):
-        while(w<52):
-            week_dict[w+1]=patients_array[w]    
+
+def create_third_dict(df,row,c):
+    third_dict= dict()
+    parsed_array=parse_cel(df,row,c)
+    w=1 #Numero della settimana
+    
+    if(is_not_empty(parsed_array)):#Se ha valori utili creo le settimane 
+        while(w<53):#52 settimane in un anno
+            third_dict[w]=parsed_array[w-1]    
             w=w+1
     
-    return week_dict
-        
-def create_hospital_dict(id_hosp,df,riga,columns,columns_values):
-    spec_dict= dict()
-    c=1
+    return third_dict
+ 
+       
+def create_second_dict(df,row,number_of_columns,columns_titles):
+    second_dict= dict()
+    c=1 #Colonna corrente
     
-    while(c<columns):
-        id_spec= columns_values[c]
-        c_w_d= create_week_dict(df,riga,c)
-        if(bool(c_w_d)):
-            spec_dict[id_spec]= c_w_d
+    while(c<number_of_columns):
+        second_key= columns_titles[c]
+        temp_week_dict= create_third_dict(df,row,c)
+        if(bool(temp_week_dict)):#E' falso se il dict è vuoto
+            second_dict[second_key]= temp_week_dict
         c=c+1
     
-    return spec_dict
+    return second_dict
 
-#liste di dizionari [{id_osp1:[{id_spec:{num_week:#_patients}}]}]
+
+#dizionario di dizionari {id_osp:{id_spec:{num_week:#_patients}}}
 def start(filecsv):
     filename= pd.read_csv(filecsv, low_memory=False)
-    df= pd.DataFrame(filename)
+    df= pd.DataFrame(filename) #Creo il DataFrame del file csv
     
-    riga=0
-    num_week=0
-    columns = df.shape[1]
+    row=0
+    number_of_columns = df.shape[1] #Numero di colonne del file
     
     file_dict= dict()
-    columns_values=list(df)
+    columns_titles=list(df) #Titoli delle colonne
     
+    length_df= len(df)
     
-    while(riga<len(df)):
-        id_hosp = df.loc[riga][0]
-        file_dict[id_hosp]= create_hospital_dict(id_hosp,df,riga,columns,columns_values)
-        riga= riga+1
+    while(row<length_df):
+        first_key = df.loc[row][0]#Chiave del primo dizionario
+        file_dict[first_key]= create_second_dict(df,row,number_of_columns,columns_titles)
+        row= row+1
         
-    
-
+    name_new_file= 'hospitalToSpecialtyDistribution'
+    save_obj(file_dict,name_new_file)
     return file_dict   
         
 
-def quick_start(filecsv):
-    filename= pd.read_csv(filecsv, low_memory=False)
-    df= pd.DataFrame(filename)
+# =============================================================================
+#  def quick_start(filecsv):
+#      filename= pd.read_csv(filecsv, low_memory=False)
+#      df= pd.DataFrame(filename)
+#      
+#      a=parse_cel(df,1,1)
+#      return a
+# =============================================================================
     
-    a=parse_cel(df,1,1)
-    return a
-    
-    
+  
     
     
     
