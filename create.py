@@ -8,37 +8,47 @@ Created on Mon Dec  3 19:35:41 2018
 import pickle
 import pandas as pd 
 
+#creazione dell'oggetto pickle
 def save_obj(obj, name):
-    with open('datiStrutturati/'+ name + '.pkl', 'wb') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+#    with open('datiStrutturati/'+ name + '.pkl', 'wb') as f:
+#        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+    f = open('datiStrutturati/' + name + '.pkl', 'rb')  
+    mydict = pickle.dump(f)
+    f.close()   
+    return mydict
 
-
+#caricamento dell'oggetto pickle
 def load_obj(name):
-    with open('datiStrutturati/' + name + '.pkl', 'rb') as f:
-        return pickle.load(f)
+#    with open('datiStrutturati/' + name + '.pkl', 'rb') as f:
+#        return pickle.load(f)
+    f = open('datiStrutturati/' + name + '.pkl', 'rb')  
+    mydict = pickle.load(f)
+    f.close()   
+    return mydict
 
-
+#se la lista passata ha solo valori nulli ritorno False altrimenti True
 def is_not_empty(parsed_array):
     c=0
     length=len(parsed_array)
     
-    while(c<length):#Controllo se nella lista c'è almeno un valore diverso da 0
+    while(c<length):
         if(parsed_array[c] != 0):
             return True
         c=c+1
     
     return False
         
-    
+#Parsifico la cella di riga row e colonna c inserendo i valori in una 
+#lista con elementi separatori quelli presenti in separator
 def parse_cel(df,row,c):
     separator=['_']
-    #Parsifico la cella di riga row e colonna c inserendo i valori in una 
-    #lista con elementi separatori quelli presenti in separator
+    
     parsed_array=[int(h) for h in df.loc[row][c] if h not in separator]
     
     return parsed_array
 
 
+#creazione dizionario dei valori delle settimane
 def create_third_dict(df,row,c):
     third_dict= dict()
     parsed_array=parse_cel(df,row,c)
@@ -51,7 +61,7 @@ def create_third_dict(df,row,c):
     
     return third_dict
  
-       
+#creo dizionario  delle specialità
 def create_second_dict(df,row,number_of_columns,columns_titles):
     second_dict= dict()
     c=1 #Colonna corrente
@@ -66,6 +76,7 @@ def create_second_dict(df,row,number_of_columns,columns_titles):
     return second_dict
 
 
+#creo dizionario degli ospedali strutturato come 
 #dizionario di dizionari {id_osp:{id_spec:{num_week:#_patients}}}
 def start(filecsv):
     filename= pd.read_csv(filecsv, low_memory=False)
@@ -90,6 +101,7 @@ def start(filecsv):
         
 
 # =============================================================================
+# metodo di prova
 #  def quick_start(filecsv):
 #      filename= pd.read_csv(filecsv, low_memory=False)
 #      df= pd.DataFrame(filename)
