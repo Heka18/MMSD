@@ -6,9 +6,7 @@ Created on Fri Nov  2 15:10:41 2018
 """
 import csv
 import numpy as np
-import scipy
 import pandas as pd
-from sqlalchemy import create_engine
 
     
 def read_csv1(filename):	
